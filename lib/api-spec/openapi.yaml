@@ -1,0 +1,859 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 1.0.0
+  description: MindPulse — Student Mental Wellness API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: checkins
+    description: Daily mood check-ins
+  - name: insights
+    description: AI-powered insights and nudges
+  - name: resources
+    description: Campus mental health resources
+  - name: achievements
+    description: User achievements and streaks
+  - name: community
+    description: Anonymous community sharing
+  - name: gemini
+    description: Gemini AI chat and image operations
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: registerUser
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: loginUser
+      tags: [auth]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logoutUser
+      tags: [auth]
+      summary: Logout user
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /checkins:
+    get:
+      operationId: getCheckins
+      tags: [checkins]
+      summary: Get user check-ins
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Check-ins list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Checkin"
+    post:
+      operationId: createCheckin
+      tags: [checkins]
+      summary: Create a daily check-in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCheckinRequest"
+      responses:
+        "201":
+          description: Check-in created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Checkin"
+
+  /checkins/today:
+    get:
+      operationId: getTodayCheckin
+      tags: [checkins]
+      summary: Get today's check-in
+      responses:
+        "200":
+          description: Today's check-in or null
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodayCheckinResponse"
+
+  /checkins/stats:
+    get:
+      operationId: getCheckinStats
+      tags: [checkins]
+      summary: Get mood statistics
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            default: 30
+      responses:
+        "200":
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckinStats"
+
+  /insights:
+    get:
+      operationId: getInsights
+      tags: [insights]
+      summary: Get personalized insights and nudges
+      responses:
+        "200":
+          description: Insights
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InsightsResponse"
+
+  /resources:
+    get:
+      operationId: getResources
+      tags: [resources]
+      summary: Get campus mental health resources
+      responses:
+        "200":
+          description: Resources list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Resource"
+
+  /achievements:
+    get:
+      operationId: getAchievements
+      tags: [achievements]
+      summary: Get user achievements
+      responses:
+        "200":
+          description: Achievements
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AchievementsResponse"
+
+  /community/feed:
+    get:
+      operationId: getCommunityFeed
+      tags: [community]
+      summary: Get anonymous community feed
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Community posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommunityPost"
+
+  /community/share:
+    post:
+      operationId: shareCommunityPost
+      tags: [community]
+      summary: Share anonymously to community
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SharePostRequest"
+      responses:
+        "201":
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityPost"
+
+  /community/react:
+    post:
+      operationId: reactToPost
+      tags: [community]
+      summary: React to a community post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReactToPostRequest"
+      responses:
+        "200":
+          description: Reacted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /gemini/conversations:
+    get:
+      operationId: listGeminiConversations
+      tags: [gemini]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeminiConversation"
+    post:
+      operationId: createGeminiConversation
+      tags: [gemini]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGeminiConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiConversation"
+  /gemini/conversations/{id}:
+    get:
+      operationId: getGeminiConversation
+      tags: [gemini]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiConversationWithMessages"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiError"
+    delete:
+      operationId: deleteGeminiConversation
+      tags: [gemini]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeminiError"
+  /gemini/conversations/{id}/messages:
+    get:
+      operationId: listGeminiMessages
+      tags: [gemini]
+      summary: List messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeminiMessage"
+    post:
+      operationId: sendGeminiMessage
+      tags: [gemini]
+      summary: Send a message and receive an AI response (SSE stream)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendGeminiMessageBody"
+      responses:
+        "200":
+          description: SSE stream of assistant response chunks
+          content:
+            text/event-stream: {}
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required: [error]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required: [success]
+
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        university:
+          type: string
+        year:
+          type: string
+      required: [name, email, password]
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required: [email, password]
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/UserProfile"
+        token:
+          type: string
+      required: [user, token]
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        university:
+          type: string
+        year:
+          type: string
+        avatarUrl:
+          type: string
+        streakDays:
+          type: integer
+        totalCheckins:
+          type: integer
+        joinedAt:
+          type: string
+          format: date-time
+      required: [id, name, email, streakDays, totalCheckins, joinedAt]
+
+    CreateCheckinRequest:
+      type: object
+      properties:
+        moodScore:
+          type: integer
+          minimum: 1
+          maximum: 10
+        stressLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        energyLevel:
+          type: integer
+          minimum: 1
+          maximum: 10
+        sleepHours:
+          type: number
+        exerciseMinutes:
+          type: integer
+        gratitudeNote:
+          type: string
+        journalNote:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        shareAnonymously:
+          type: boolean
+      required: [moodScore, stressLevel, energyLevel]
+
+    Checkin:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        moodScore:
+          type: integer
+        stressLevel:
+          type: string
+        energyLevel:
+          type: integer
+        sleepHours:
+          type: number
+        exerciseMinutes:
+          type: integer
+        gratitudeNote:
+          type: string
+        journalNote:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, userId, moodScore, stressLevel, energyLevel, createdAt]
+
+    TodayCheckinResponse:
+      type: object
+      properties:
+        checkin:
+          $ref: "#/components/schemas/Checkin"
+        hasCheckedIn:
+          type: boolean
+      required: [hasCheckedIn]
+
+    CheckinStats:
+      type: object
+      properties:
+        averageMood:
+          type: number
+        averageEnergy:
+          type: number
+        averageSleep:
+          type: number
+        averageExercise:
+          type: number
+        streakDays:
+          type: integer
+        totalCheckins:
+          type: integer
+        moodTrend:
+          type: string
+          enum: [improving, declining, stable]
+        stressDistribution:
+          type: object
+          properties:
+            low:
+              type: integer
+            medium:
+              type: integer
+            high:
+              type: integer
+            critical:
+              type: integer
+          required: [low, medium, high, critical]
+        weeklyData:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeeklyDataPoint"
+        heatmapData:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeatmapPoint"
+      required: [averageMood, averageEnergy, streakDays, totalCheckins, moodTrend, stressDistribution, weeklyData, heatmapData]
+
+    WeeklyDataPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        dayLabel:
+          type: string
+        moodScore:
+          type: number
+        energyLevel:
+          type: number
+        stressLevel:
+          type: string
+      required: [date, dayLabel, moodScore, energyLevel]
+
+    HeatmapPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        value:
+          type: number
+        count:
+          type: integer
+      required: [date, value, count]
+
+    InsightsResponse:
+      type: object
+      properties:
+        alertLevel:
+          type: integer
+          minimum: 0
+          maximum: 3
+        nudges:
+          type: array
+          items:
+            $ref: "#/components/schemas/Nudge"
+        tips:
+          type: array
+          items:
+            type: string
+        weeklyInsight:
+          type: string
+        breathingRecommended:
+          type: boolean
+      required: [alertLevel, nudges, tips, weeklyInsight, breathingRecommended]
+
+    Nudge:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [warning, suggestion, celebration, reminder]
+        title:
+          type: string
+        message:
+          type: string
+        icon:
+          type: string
+        priority:
+          type: integer
+      required: [id, type, title, message, icon, priority]
+
+    Resource:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [counselor, hotline, meditation, group, workshop, app]
+        description:
+          type: string
+        phone:
+          type: string
+        website:
+          type: string
+        hours:
+          type: string
+        location:
+          type: string
+        isEmergency:
+          type: boolean
+        rating:
+          type: number
+        tags:
+          type: array
+          items:
+            type: string
+      required: [id, name, type, description, isEmergency, tags]
+
+    AchievementsResponse:
+      type: object
+      properties:
+        streak:
+          type: integer
+        badges:
+          type: array
+          items:
+            $ref: "#/components/schemas/Badge"
+        points:
+          type: integer
+        level:
+          type: integer
+        levelName:
+          type: string
+        nextLevelPoints:
+          type: integer
+      required: [streak, badges, points, level, levelName, nextLevelPoints]
+
+    Badge:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        icon:
+          type: string
+        earned:
+          type: boolean
+        earnedAt:
+          type: string
+          format: date-time
+        category:
+          type: string
+          enum: [streak, mood, social, wellness, milestone]
+      required: [id, name, description, icon, earned, category]
+
+    CommunityPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        mood:
+          type: string
+        message:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        reactions:
+          type: object
+          properties:
+            heart:
+              type: integer
+            hug:
+              type: integer
+            star:
+              type: integer
+          required: [heart, hug, star]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, mood, message, tags, reactions, createdAt]
+
+    SharePostRequest:
+      type: object
+      properties:
+        mood:
+          type: string
+        message:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+      required: [mood, message]
+
+    ReactToPostRequest:
+      type: object
+      properties:
+        postId:
+          type: integer
+        reaction:
+          type: string
+          enum: [heart, hug, star]
+      required: [postId, reaction]
+
+    GeminiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, createdAt]
+
+    GeminiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, conversationId, role, content, createdAt]
+
+    CreateGeminiConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required: [title]
+
+    SendGeminiMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required: [content]
+
+    GeminiConversationWithMessages:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeminiMessage"
+      required: [id, title, createdAt, messages]
+
+    GeminiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]

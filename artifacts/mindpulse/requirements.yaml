@@ -1,0 +1,22 @@
+packages:
+  "framer-motion": "For premium hackathon-level page transitions, micro-interactions, and the breathing exercise widget"
+  "recharts": "For rendering beautiful mood and energy trend charts on the Analytics page"
+  "date-fns": "For formatting dates consistently across the app"
+  "clsx": "For conditional tailwind class merging"
+  "tailwind-merge": "For merging tailwind classes safely"
+  "lucide-react": "For beautiful consistent icons"
+
+images:
+  - path: "artifacts/mindpulse/public/images/hero-bg.png"
+    description: "Dark, premium abstract background with glowing neural network or flowing energetic particles in deep violet, cyan, and black"
+    aspect_ratio: "16:9"
+  - path: "artifacts/mindpulse/public/images/logo-mark.png"
+    description: "Minimalist glowing geometric logo mark for a mental wellness app, bright cyan and purple gradient on transparent background"
+    aspect_ratio: "1:1"
+  - path: "artifacts/mindpulse/public/images/avatar-placeholder.png"
+    description: "Beautiful abstract glowing orb avatar placeholder, 3d rendered style, deep space background"
+    aspect_ratio: "1:1"
+
+notes:
+  - Global fetch is monkey-patched in App.tsx to inject the Authorization Bearer token from localStorage for all generated API client calls.
+  - The frontend assumes the API returns 401 when unauthorized and handles global redirects to /login.
